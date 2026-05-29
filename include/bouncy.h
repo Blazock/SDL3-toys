@@ -10,10 +10,8 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
-#include <bits/time.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <time.h>
 
 enum {
     width = 1920 >> 1,
@@ -36,7 +34,5 @@ void DrawTrajectory(SDL_Renderer *renderer,
                     Uint8 current_trajectory_index);
 
 void step(Circle *circle, float delta_time_in_seconds);
-
-double diff_s(struct timespec start, struct timespec end);
 
 void bouncy_ball();
