@@ -1,0 +1,22 @@
+# .clangd
+CompileFlags:
+  # 自动加载 compilation database
+  CompilationDatabase: ./build
+  # 如果想为所有文件添加默认参数（如 C++23）
+  # QueryDriver: /usr/bin/clang++
+  # Add: [-std=c++23, -fmodules]
+  # Add: [-std=clatest]
+  # FallbackFlags: [-std=c++23, -Wall]  # 强制作为兜底配置
+
+# 开启 Clang-Tidy 集成
+# clangd 会自动寻找项目根目录的 .clang-tidy 文件
+# Diagnostics:
+#   ClangTidy: {}
+    # Add: ["*"] # 启用 .clang-tidy 文件中定义的所有检查
+    # Add: ["bugprone-*", "performance-*", "modernize-*", "misc-*", "readability-*", "portability-*", "clang-analyzer-*", "clang-diagnostic-*"]
+    # Remove: ["fuchsia-*", "llvmlibc-*", "readability-identifier-length"]
+# Remove: ["bugprone-exception-escape"] # 如果有特殊需要，可以在这里排除
+
+# Clang-Format 集成
+# clangd 会自动寻找 .clang-format 文件，无需手动配置
+# 你只需要确保根目录下有 .clang-format 即可
