@@ -70,9 +70,9 @@ void bouncy_ball() {
         step(&circle, dt);
 
         SDL_RenderClear(renderer);
-        SDL_FColor color1 = {.r = 0.1f, .g = 1.0f, .b = 1.0f, .a = 0.2f};
-        DrawCircle(renderer, &circle, color1);
-        trajectory[head++] = (Circle){circle.x, circle.y};
+        SDL_FColor color = {.r = 0.1f, .g = 1.0f, .b = 1.0f, .a = 0.2f};
+
+        trajectory[head++] = (Circle){circle.x, circle.y, 0, 0, 0};
         if (cnt < TRAJECTORY_LENGTH)
             cnt++;
         DrawTrajectory(renderer, trajectory, head, cnt);
