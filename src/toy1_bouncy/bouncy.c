@@ -11,7 +11,8 @@ void bouncy_ball() {
         return;
     }
 
-    SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, "0");
+    SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR,
+                "0"); /* disable libdecor on Wayland, use plain xdg-shell */
     // 2. Create Window
     SDL_Window *window =
         SDL_CreateWindow("Bouncy Ball", width, height, SDL_WINDOW_BORDERLESS);
@@ -47,11 +48,13 @@ void bouncy_ball() {
         .vy = 200,
         .radius = height >> 4,
     };
+    /* ring buffer for trajectory: holds at most TRAJECTORY_LENGTH positions */
     Circle trajectory[TRAJECTORY_LENGTH];
     Uint64 last = SDL_GetPerformanceCounter();
 
     bool done = false;
-    Uint8 head = 0, cnt = 0;
+    Uint8 head = 0,
+          cnt = 0; /* head: next write slot; cnt: number of records so far */
     while (!done) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -64,9 +67,12 @@ void bouncy_ball() {
         }
 
         Uint64 now = SDL_GetPerformanceCounter();
+        /* dt = real time difference (seconds) between frames, for
+         * frame-rate-independent physics */
         float dt = (float)(now - last) / SDL_GetPerformanceFrequency();
         last = now;
 
+        /* physics step: update position and velocity by dt */
         step(&circle, dt);
 
         SDL_RenderClear(renderer);
@@ -76,9 +82,13 @@ void bouncy_ball() {
         if (cnt < TRAJECTORY_LENGTH)
             cnt++;
         DrawTrajectory(renderer, trajectory, head, cnt);
+        DrawCircle(renderer, &circle, color);
+        /* push current center into ring buffer, head wraps around automatically
+         */
         SDL_RenderPresent(renderer);
 
-        float target_frame_time = 1.0f / 60.0f; // 目标 60 FPS
+        /* cap frame rate at ~60 FPS: sleep if this frame finished early */
+        float target_frame_time = 1.0f / 60.0f;
         if (dt < target_frame_time) {
             SDL_Delay((Uint32)((target_frame_time - dt) * 1000.0f));
         }
@@ -90,14 +100,18 @@ void bouncy_ball() {
 }
 
 void DrawCircle(SDL_Renderer *renderer, Circle *circle, SDL_FColor color) {
+    /* draw filled circle as a triangle fan: center + NUM_SEGMENTS points on the
+     * circumference */
     SDL_Vertex vertices[NUM_SEGMENTS + 2];
     float step = 2.0f * PI / NUM_SEGMENTS;
 
-    // center
+    /* vertex 0 = center */
     vertices[0].position = (SDL_FPoint){circle->x, circle->y};
     vertices[0].color = color;
     vertices[0].tex_coord = (SDL_FPoint){0, 0};
 
+    /* vertices 1..NUM_SEGMENTS+1 = points on circle (first == last to close the
+     * fan) */
     for (int i = 1; i <= NUM_SEGMENTS + 1; ++i) {
         float angle = step * ((i - 1) % NUM_SEGMENTS);
         vertices[i].position =
@@ -107,6 +121,7 @@ void DrawCircle(SDL_Renderer *renderer, Circle *circle, SDL_FColor color) {
         vertices[i].tex_coord = (SDL_FPoint){0, 0};
     }
 
+    /* index buffer: every 3 indices form a triangle (0, i+1, i+2) */
     int indices[NUM_SEGMENTS * 3];
     for (int i = 0; i < NUM_SEGMENTS; ++i) {
         indices[i * 3 + 0] = 0;
@@ -122,10 +137,13 @@ void DrawTrajectory(SDL_Renderer *renderer,
                     Uint8 count) {
     if (count == 0)
         return;
+    /* locate the oldest record in the ring buffer as the start */
     Uint8 start = (head - count);
     for (int i = 0; i < count; ++i) {
         Uint8 idx = (start + i);
         float t = (float)i / count;
+        /* oldest -> newest: alpha increases, radius decreases, creating a
+         * fading trail */
         Uint8 alpha = (Uint8)(t * 255.0f);
         SDL_FColor color = {1.0f, 1.0f, 1.0f, alpha / 255.0f};
         trajectory[idx].radius = 5.0f * t;
@@ -133,33 +151,31 @@ void DrawTrajectory(SDL_Renderer *renderer,
     }
 }
 
+/* physics integration + wall collision handling */
 void step(Circle *circle, float delta_time_in_seconds) {
     float dt = delta_time_in_seconds;
 
-    // x y from the top-left corner
-    circle->vy += GRAVITY * dt;
-    circle->x += circle->vx * dt;
-    circle->y += circle->vy * dt;
+    /* origin at top-left, x right, y down */
+    circle->vy += GRAVITY * dt;   /* accumulate gravity into velocity */
+    circle->x += circle->vx * dt; /* horizontal displacement */
+    circle->y += circle->vy * dt; /* vertical displacement */
 
-    // right boundary
+    /* bounce off walls (20% energy loss, coefficient 0.8) and clamp position */
     if (circle->x + circle->radius > width) {
         circle->x = width - circle->radius;
         circle->vx = -circle->vx * 0.8f;
     }
 
-    // left boundary
     if (circle->x - circle->radius < 0) {
         circle->x = circle->radius;
         circle->vx = -circle->vx * 0.8f;
     }
 
-    // upper boundary
     if (circle->y - circle->radius < 0) {
         circle->y = circle->radius;
         circle->vy = -circle->vy * 0.8f;
     }
 
-    // lower boundary
     if (circle->y + circle->radius > height) {
         circle->y = height - circle->radius;
         circle->vy = -circle->vy * 0.8f;
