@@ -126,9 +126,9 @@ void DrawTrajectory(SDL_Renderer *renderer,
     for (int i = 0; i < count; ++i) {
         Uint8 idx = (start + i);
         float t = (float)i / count;
-        Uint8 alpha = (Uint8)((float)(t - i) * 128.0f);
+        Uint8 alpha = (Uint8)(t * 255.0f);
         SDL_FColor color = {1.0f, 1.0f, 1.0f, alpha / 255.0f};
-        trajectory[idx].radius = 5.0f * (t - i) / 128.0f;
+        trajectory[idx].radius = 5.0f * t;
         DrawCircle(renderer, &trajectory[idx], color);
     }
 }
