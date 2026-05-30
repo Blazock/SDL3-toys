@@ -76,12 +76,12 @@ void bouncy_ball() {
         step(&circle, dt);
 
         SDL_RenderClear(renderer);
-        SDL_FColor color = {.r = 0.1f, .g = 1.0f, .b = 1.0f, .a = 0.2f};
 
         trajectory[head++] = (Circle){circle.x, circle.y, 0, 0, 0};
         if (cnt < TRAJECTORY_LENGTH)
             cnt++;
         DrawTrajectory(renderer, trajectory, head, cnt);
+        SDL_FColor color = {.r = 0.1f, .g = 1.0f, .b = 1.0f, .a = 0.8f};
         DrawCircle(renderer, &circle, color);
         /* push current center into ring buffer, head wraps around automatically
          */
@@ -144,7 +144,7 @@ void DrawTrajectory(SDL_Renderer *renderer,
         float t = (float)i / count;
         /* oldest -> newest: alpha increases, radius decreases, creating a
          * fading trail */
-        Uint8 alpha = (Uint8)(t * 255.0f);
+        Uint8 alpha = (Uint8)(t * 128.0f);
         SDL_FColor color = {1.0f, 1.0f, 1.0f, alpha / 255.0f};
         trajectory[idx].radius = 5.0f * t;
         DrawCircle(renderer, &trajectory[idx], color);
