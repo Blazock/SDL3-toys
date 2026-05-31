@@ -10,8 +10,8 @@ CompileFlags:
 
 # 开启 Clang-Tidy 集成
 # clangd 会自动寻找项目根目录的 .clang-tidy 文件
-# Diagnostics:
-#   ClangTidy: {}
+Diagnostics:
+  ClangTidy: {}
     # Add: ["*"] # 启用 .clang-tidy 文件中定义的所有检查
     # Add: ["bugprone-*", "performance-*", "modernize-*", "misc-*", "readability-*", "portability-*", "clang-analyzer-*", "clang-diagnostic-*"]
     # Remove: ["fuchsia-*", "llvmlibc-*", "readability-identifier-length"]
