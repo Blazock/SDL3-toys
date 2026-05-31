@@ -44,8 +44,8 @@ void bouncy_ball() {
     Circle circle = {
         .x = width >> 1,
         .y = height >> 1,
-        .vx = 200,
-        .vy = 200,
+        .vx = 2000,
+        .vy = 2000,
         .radius = height >> 4,
     };
     /* ring buffer for trajectory: holds at most TRAJECTORY_LENGTH positions */
