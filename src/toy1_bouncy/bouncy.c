@@ -1,4 +1,5 @@
 #include "../../include/bouncy.h"
+
 #include <stdio.h>
 
 void bouncy_ball() {
@@ -6,28 +7,24 @@ void bouncy_ball() {
 
     // 1. Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_Init failed: %s\n",
-                     SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_Init failed: %s\n", SDL_GetError());
         return;
     }
 
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR,
                 "0"); /* disable libdecor on Wayland, use plain xdg-shell */
     // 2. Create Window
-    SDL_Window *window =
-        SDL_CreateWindow("Bouncy Ball", width, height, SDL_WINDOW_BORDERLESS);
+    SDL_Window* window = SDL_CreateWindow("Bouncy Ball", width, height, SDL_WINDOW_BORDERLESS);
     if (window == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create window: %s\n",
-                     SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create window: %s\n", SDL_GetError());
         SDL_Quit();
         return;
     }
 
     // 3. Create renderer (required by Wayland)
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
     if (renderer == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create renderer: %s\n",
-                     SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return;
@@ -53,8 +50,7 @@ void bouncy_ball() {
     Uint64 last = SDL_GetPerformanceCounter();
 
     bool done = false;
-    Uint8 head = 0,
-          cnt = 0; /* head: next write slot; cnt: number of records so far */
+    Uint8 head = 0, cnt = 0; /* head: next write slot; cnt: number of records so far */
     while (!done) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -99,7 +95,7 @@ void bouncy_ball() {
     SDL_Quit();
 }
 
-void DrawCircle(SDL_Renderer *renderer, Circle *circle, SDL_FColor color) {
+void DrawCircle(SDL_Renderer* renderer, Circle* circle, SDL_FColor color) {
     /* draw filled circle as a triangle fan: center + NUM_SEGMENTS points on the
      * circumference */
     SDL_Vertex vertices[NUM_SEGMENTS + 2];
@@ -114,9 +110,8 @@ void DrawCircle(SDL_Renderer *renderer, Circle *circle, SDL_FColor color) {
      * fan) */
     for (int i = 1; i <= NUM_SEGMENTS + 1; ++i) {
         float angle = step * ((i - 1) % NUM_SEGMENTS);
-        vertices[i].position =
-            (SDL_FPoint){circle->x + circle->radius * SDL_cosf(angle),
-                         circle->y + circle->radius * SDL_sinf(angle)};
+        vertices[i].position = (SDL_FPoint){circle->x + circle->radius * SDL_cosf(angle),
+                                            circle->y + circle->radius * SDL_sinf(angle)};
         vertices[i].color = vertices[0].color;
         vertices[i].tex_coord = (SDL_FPoint){0, 0};
     }
@@ -128,12 +123,10 @@ void DrawCircle(SDL_Renderer *renderer, Circle *circle, SDL_FColor color) {
         indices[i * 3 + 1] = i + 1;
         indices[i * 3 + 2] = i + 2;
     }
-    SDL_RenderGeometry(renderer, NULL, vertices, NUM_SEGMENTS + 2, indices,
-                       NUM_SEGMENTS * 3);
+    SDL_RenderGeometry(renderer, NULL, vertices, NUM_SEGMENTS + 2, indices, NUM_SEGMENTS * 3);
 }
 
-void DrawTrajectory(SDL_Renderer *renderer,
-                    Circle trajectory[TRAJECTORY_LENGTH], Uint8 head,
+void DrawTrajectory(SDL_Renderer* renderer, Circle trajectory[TRAJECTORY_LENGTH], Uint8 head,
                     Uint8 count) {
     if (count == 0)
         return;
@@ -152,7 +145,7 @@ void DrawTrajectory(SDL_Renderer *renderer,
 }
 
 /* physics integration + wall collision handling */
-void step(Circle *circle, float delta_time_in_seconds) {
+void step(Circle* circle, float delta_time_in_seconds) {
     float dt = delta_time_in_seconds;
 
     /* origin at top-left, x right, y down */
